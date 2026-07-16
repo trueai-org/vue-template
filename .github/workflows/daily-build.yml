@@ -1,0 +1,52 @@
+name: Daily Build
+
+# 每日定时构建 + 手动触发，发布一个干净的稳定版本
+on:
+  schedule:
+    # 每天 UTC 02:00（北京时间 10:00）
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write # 创建每日 tag
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 安装依赖（可重现）
+        run: pnpm install --frozen-lockfile
+
+      - name: 类型检查
+        run: pnpm typecheck
+
+      - name: 生产构建
+        run: pnpm build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.run_number }}
+          path: dist
+
+      - name: 创建每日 tag
+        run: |
+          TAG="daily-$(date -u +'%Y-%m-%d')"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag $TAG 已存在，跳过"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+            echo "已发布 $TAG"
+          fi
