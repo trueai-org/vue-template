@@ -15,7 +15,7 @@ import path from 'node:path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templateRoot = path.resolve(__dirname, '..')
-const releasesRoot = path.resolve(templateRoot, '..', 'releases')
+const releasesRoot = path.resolve(templateRoot, 'releases')
 const date = new Date().toISOString().slice(0, 10)
 const target = path.join(releasesRoot, `vue-template-${date}`)
 const skipVerify = process.argv.includes('--skip-verify')
