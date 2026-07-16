@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 干净构建脚本：安装依赖 → 类型检查 → 生产构建。
+ * 干净构建脚本：安装依赖 -> 生产构建（含类型检查）。
  * 幂等、可重现，用于每日 CI 与本地复现。
  *
  * 用法：node scripts/build.mjs
@@ -19,7 +19,6 @@ const installCmd = existsSync('pnpm-lock.yaml')
   : 'pnpm install'
 
 run('安装依赖', installCmd)
-run('类型检查', 'pnpm typecheck')
-run('生产构建', 'pnpm build')
+run('生产构建（含类型检查）', 'pnpm build')
 
 console.log('\n✓ 构建完成')

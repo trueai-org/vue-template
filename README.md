@@ -1,117 +1,144 @@
 # vue-template
 
-一个干净、UI 无关、模块可替换的 Vue3 模板。每日构建发布稳定版本。
+基于官方 `npm create vite` vue-ts 模板，新增最小自定义模块。UI 无关、不过度封装、可重现。
 
-## 设计原则
+## 原则与规则
 
-1. **只使用官方指令** — 仅依赖 `vite` / `vue-tsc` 等官方 CLI
-2. **与 UI 框架无关** — 暂不接入任何 UI 框架，纯 UnoCSS + 原生 HTML；未来需要时整体重写 `ui/` 目录
-3. **模块化单一职责** — 每个业务模块自包含（api + store + view + route），可整体替换/迁移
-4. **可重现** — 锁定依赖版本 + lock 文件 + Node 版本约束，任意时间都能跑通
-5. **简单清晰** — 目录结构一目了然，无 monorepo 额外复杂度
+1. **官方模板优先** - `npm create vite` 产物原封不动，只新增模块
+2. **不手动改动官方文件** - 官方生成的模板内容（`tsconfig`、`style.css`、`components/HelloWorld.vue`、`assets/` 等）不手动修改；必要的接入（`main.ts` / `App.vue` / `vite.config.ts` / `index.html`）只通过 `generate.mjs` 脚本注入
+3. **官方指令安装依赖** - 依赖通过 `pnpm add` 安装，不复制固定版本 `package.json`
+4. **脚本驱动** - 安装依赖、新增模块、新增页面均通过脚本注入，确保可重现
+5. **不过度封装** - 无 bootstrap、无 http 解包封装、无 UI 组件封装
+6. **所有命令遵循官方文档** - 每个命令附官方文档地址
 
-## 技术栈
+## 官方命令与文档
 
-| 依赖 | 版本 | 说明 |
-| --- | --- | --- |
-| Vue | ^3.5 | 视图层 |
-| Vue Router | ^5.1 | 官方路由 |
-| Pinia | ^3.0 | 官方状态管理 |
-| Axios | ^1.18 | 网络请求 |
-| Vite | ^8.1 | 构建工具（Rolldown） |
-| TypeScript | ^6.0 | 类型系统 |
-| UnoCSS | ^66.7 | 原子化样式 |
-| pnpm | >=11 | 包管理器 |
+
+| 命令                       | 用途          | 官方文档                                                                           |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------ |
+| `npm create vite@latest` | 官方脚手架创建项目   | [https://github.com/vitejs/create-vite](https://github.com/vitejs/create-vite) |
+| `pnpm install`           | 安装依赖        | [https://pnpm.io/cli/install](https://pnpm.io/cli/install)                     |
+| `pnpm add <pkg>`         | 添加依赖        | [https://pnpm.io/cli/add](https://pnpm.io/cli/add)                             |
+| `pnpm update --latest`   | 更新到最新       | [https://pnpm.io/cli/update](https://pnpm.io/cli/update)                       |
+| `pnpm dev`               | 开发服务器       | [https://vite.dev/guide/cli.html](https://vite.dev/guide/cli.html)             |
+| `pnpm build`             | 类型检查 + 生产构建 | [https://vite.dev/guide/cli.html](https://vite.dev/guide/cli.html)             |
+| `pnpm preview`           | 预览构建产物      | [https://vite.dev/guide/cli.html](https://vite.dev/guide/cli.html)             |
+
+
+依赖官方文档：[Vue](https://vuejs.org) · [Vue Router](https://router.vuejs.org) · [Pinia](https://pinia.vuejs.org) · [Axios](https://axios-http.com) · [UnoCSS](https://unocss.dev)（[Vite](https://unocss.dev/integrations/vite) · [Presets](https://unocss.dev/guide/presets) · [Reset](https://unocss.dev/guide/style-reset)） · [TypeScript](https://www.typescriptlang.org) · [vue-tsc](https://github.com/vuejs/language-tools)
 
 ## 快速开始
 
 ```bash
-# 需要 Node ^22.18 || ^24，pnpm >=11
-pnpm install
-pnpm dev       # 开发
-pnpm build     # 类型检查 + 生产构建
-pnpm preview   # 预览构建产物
-pnpm typecheck # 仅类型检查
+pnpm install          # 安装依赖
+pnpm dev              # 开发
+pnpm build            # 类型检查 + 生产构建（vue-tsc -b && vite build）
+pnpm preview          # 预览
 ```
 
-## 目录结构
 
-```
-vue-template/
-├── .github/workflows/daily-build.yml  # 每日构建 CI
-├── scripts/build.mjs                  # 可重现构建脚本
-├── src/
-│   ├── app/                # 应用入口与组装（main → bootstrap → App）
-│   ├── api/                # Axios 实例 + 拦截器 + http 封装
-│   ├── components/         # 通用组件（UnoCSS + 原生 HTML）
-│   ├── composables/        # 组合式函数（useRequest 等）
-│   ├── layouts/            # 布局（DefaultLayout + Header/Sidebar）
-│   ├── modules/            # 业务模块（每个自包含、可替换）
-│   │   ├── home/           #   api + store + view + route + index
-│   │   └── about/
-│   ├── router/             # 路由聚合 + 守卫
-│   ├── stores/             # Pinia（app 级状态）
-│   ├── styles/             # 全局样式（CSS 变量驱动主题）
-│   ├── types/              # 类型声明（RouteMeta 等）
-│   └── utils/              # 纯函数工具（无框架依赖）
-├── uno.config.ts           # UnoCSS 配置（presets + shortcuts）
-├── vite.config.ts          # Vite 配置
-└── tsconfig.json           # TypeScript（project references）
+
+## 检查更新
+
+```bash
+pnpm update-latest    # 等同 pnpm update --latest，更新所有依赖到最新
+pnpm build            # 更新后验证构建
 ```
 
-## 模块化约定
+> **兼容性约束**：vue-tsc 3.x 依赖 typescript 6.x；pinia 4.x 需要 typescript 7。
+> 因此 generate 脚本中 pinia 锁定 `^3`、typescript 沿用官方 create-vite 的 `~6.0.2`。
+> 其余依赖（vue / vue-router / axios / vite / unocss / @types/node 等）保持最新。
+> 待 vue-tsc 适配 typescript 7 后可解除锁定。
 
-每个业务模块位于 `src/modules/<name>/`，自包含：
 
-```
-modules/home/
-├── api.ts      # 接口定义
-├── store.ts    # Pinia store
-├── route.ts    # 路由片段（default export）
-├── views/      # 页面组件
-└── index.ts    # 模块统一出口
-```
 
-新增模块只需：
-1. 在 `modules/` 下创建模块目录
-2. 在 `router/routes.ts` 的 `children` 中 import 其 `route.ts`
+## UnoCSS 配置
 
-菜单自动从路由 `meta` 派生，无需手动维护。
+- [https://unocss.dev/interactive/](https://unocss.dev/interactive/)
 
-## 可替换性
+- **Preset**：使用 `presetWind3`（`presetUno` 已弃用，见 [Presets](https://unocss.dev/guide/presets)）
+- **Style Reset**：UnoCSS 默认不含 reset/preflight（见 [Reset](https://unocss.dev/guide/style-reset)），官方 create-vite 的 `style.css` 已提供基础样式。如需 Tailwind preflight：`pnpm add @unocss/reset` + `import '@unocss/reset/tailwind-v4.css'`
+- **Vite 集成**：`plugins: [vue(), UnoCSS()]` + `import 'virtual:uno.css'`（见 [Vite](https://unocss.dev/integrations/vite)）
 
-| 层 | 替换方式 |
-| --- | --- |
-| UI 样式 | 改 `uno.config.ts` 与 `styles/main.css`；接入 UI 框架时整体重写 `components/` |
-| 网络请求 | 改 `api/request.ts`，业务层 `http` 接口不变 |
-| 状态管理 | 改 `stores/`，模块 store 自包含可单独替换 |
-| 布局 | 替换 `layouts/`，路由引用的是 `DefaultLayout.vue` |
-| 业务模块 | 整个 `modules/<name>/` 目录可删除/替换 |
 
-## 每日构建
-
-- **CI**：`.github/workflows/daily-build.yml` 每天 UTC 02:00 自动 `install → typecheck → build`，并打 `daily-YYYY-MM-DD` tag、上传构建产物
-- **本地复现**：`node scripts/build.mjs` 执行相同的可重现流程
-- **手动触发**：GitHub Actions 页面 `workflow_dispatch`
-
-> 将本目录作为独立仓库使用时，CI 即生效。
 
 ## 历史版本生成
 
-从官方 `npm create vite` 脚手架开始，注入当前项目的自定义模块，生成带日期标签的历史快照。每步命令均打印，完全可重现。
-
 ```bash
-pnpm generate                  # 完整流程（先验证当前项目，再生成历史版本）
-pnpm generate -- --skip-verify # 跳过当前项目验证
+pnpm generate                  # 完整流程（含当前项目验证）
+pnpm generate -- --skip-verify # 跳过当前验证
 ```
 
-生成到 `../releases/vue-template-<date>/`，流程：
+生成到 `../releases/vue-template-<date>/`。完整流程（每步命令均打印，遵循官方文档）：
 
-1. 验证当前 vue-template 完整最新（typecheck + build）
-2. 创建历史目录 `releases/vue-template-<date>/`
-3. `npm create vite@latest` 官方脚手架创建基础项目
-4. 清理 create vite 默认文件
-5. 复制依赖配置（package.json / pnpm-lock.yaml / .npmrc）
-6. `pnpm install --frozen-lockfile`（版本与源项目完全一致）
-7. 复制业务模块与配置（src / 配置 / scripts / .github）
-8. 验证历史版本（typecheck + build）
+```bash
+# 第 1 步：验证当前项目
+pnpm build                          # https://vite.dev/guide/cli.html
+
+# 第 2 步：创建历史目录（Node mkdirSync）
+
+# 第 3 步：官方脚手架创建基础项目（在 releases/ 下执行）
+npm create vite@latest "vue-template-<date>" -- --template vue-ts
+                                    # https://github.com/vitejs/create-vite
+
+# 第 4 步：安装依赖（官方指令，拉取最新版）
+pnpm install                        # https://pnpm.io/cli/install
+pnpm add pinia@^3 vue-router axios  # https://pnpm.io/cli/add
+pnpm add -D unocss @iconify-json/carbon
+
+# 第 5 步：通过脚本注入接入文件 + 新增自定义模块（不手动改官方文件）
+copy /y src/main.ts     target/src/main.ts      # 接入 router/pinia/unocss
+copy /y src/App.vue     target/src/App.vue      # 改为 RouterView
+copy /y vite.config.ts  target/vite.config.ts   # 加 UnoCSS 插件
+copy /y index.html      target/index.html        # 改 title
+copy /y uno.config.ts   target/uno.config.ts     # 新增
+xcopy /e /i /y /q src/router   target/src/router  # 新增模块
+xcopy /e /i /y /q src/stores   target/src/stores  # 新增模块
+xcopy /e /i /y /q src/api      target/src/api     # 新增模块
+xcopy /e /i /y /q src/views    target/src/views   # 新增页面
+xcopy /e /i /y /q scripts      target/scripts     # 新增脚本
+xcopy /e /i /y /q .github      target/.github     # 新增 CI
+
+# 第 6 步：验证历史版本
+pnpm build                          # https://vite.dev/guide/cli.html
+```
+
+> 不删除官方文件，只通过脚本覆盖 4 个接入文件 + 新增模块。官方 `HelloWorld.vue` / `style.css` / `assets/` 等全部保留不动。
+
+
+
+## 目录结构
+
+官方 create-vite 产物（保留不改）+ 脚本注入：
+
+```
+vue-template/
+├── index.html              # 官方（脚本改 title）
+├── tsconfig.json           # 官方，不改
+├── tsconfig.app.json       # 官方，不改
+├── tsconfig.node.json      # 官方，不改
+├── vite.config.ts          # 官方（脚本加 UnoCSS 插件）
+├── .gitignore              # 官方，不改
+├── public/                 # 官方，不改
+├── src/
+│   ├── main.ts             # 官方（脚本加 router + pinia + uno.css 接入）
+│   ├── App.vue             # 官方（脚本改为 RouterView + 导航）
+│   ├── style.css           # 官方，不改（含暗色模式 prefers-color-scheme）
+│   ├── components/         # 官方，不改（HelloWorld.vue）
+│   ├── assets/             # 官方，不改
+│   ├── router/index.ts     # 新增：路由
+│   ├── stores/index.ts     # 新增：Pinia 实例
+│   ├── api/request.ts      # 新增：Axios 实例
+│   └── views/              # 新增：页面（HomeView / AboutView）
+├── uno.config.ts           # 新增：UnoCSS 配置
+├── scripts/                # 新增（build.mjs / generate.mjs）
+└── .github/workflows/      # 新增（daily-build.yml）
+```
+
+**官方文件仅 4 处由脚本注入修改**：`src/main.ts`、`src/App.vue`、`vite.config.ts`、`index.html`。其余官方文件一律不动。
+
+## 每日构建
+
+- **CI**：`.github/workflows/daily-build.yml` 每天 UTC 02:00 自动构建 + 打 `daily-YYYY-MM-DD` tag
+- **本地**：`node scripts/build.mjs`
+
