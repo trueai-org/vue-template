@@ -65,6 +65,8 @@ for (const f of ['src/main.ts', 'src/App.vue', 'src/style.css', 'vite.config.ts'
   run(`覆盖 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
 // 新增文件
 run('复制 uno.config.ts', sh.cpFile(path.join(templateRoot, 'uno.config.ts'), path.join(target, 'uno.config.ts')))
+for (const f of ['.env', '.env.development'])
+  run(`复制 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
 // 新增目录
 for (const d of ['src/router', 'src/stores', 'src/api', 'src/views', 'scripts', '.github'])
   run(`复制 ${d}/`, sh.cpDir(path.join(templateRoot, d), path.join(target, d)))

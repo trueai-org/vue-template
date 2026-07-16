@@ -93,6 +93,8 @@ copy /y src/style.css   target/src/style.css     # 清空，用 @unocss/reset �
 copy /y vite.config.ts  target/vite.config.ts   # 加 UnoCSS 插件
 copy /y index.html      target/index.html        # 改 title
 copy /y uno.config.ts   target/uno.config.ts     # 新增
+copy /y .env              target/.env              # 新增：环境变量
+copy /y .env.development  target/.env.development  # 新增：开发环境变量
 xcopy /e /i /y /q src/router   target/src/router  # 新增模块
 xcopy /e /i /y /q src/stores   target/src/stores  # 新增模块
 xcopy /e /i /y /q src/api      target/src/api     # 新增模块
@@ -120,6 +122,8 @@ vue-template/
 ├── tsconfig.node.json      # 官方，不改
 ├── vite.config.ts          # 官方（脚本加 UnoCSS 插件）
 ├── .gitignore              # 官方，不改
+├── .env                    # 新增：环境变量
+├── .env.development        # 新增：开发环境变量
 ├── public/                 # 官方，不改
 ├── src/
 │   ├── main.ts             # 官方（脚本加 router + pinia + uno.css 接入）
