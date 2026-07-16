@@ -56,12 +56,12 @@ run('npm create vite (vue-ts)', `npm create vite@latest "vue-template-${date}" -
 console.log('\n===== 第 4 步：安装依赖 =====')
 run('pnpm install', 'pnpm install', target)
 run('pnpm add pinia@^3 vue-router axios', 'pnpm add pinia@^3 vue-router axios', target)
-run('pnpm add -D unocss @iconify-json/carbon', 'pnpm add -D unocss @iconify-json/carbon', target)
+run('pnpm add -D unocss @iconify-json/carbon @unocss/reset', 'pnpm add -D unocss @iconify-json/carbon @unocss/reset', target)
 
 // ===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====
 console.log('\n===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====')
 // 覆盖官方 4 个文件（最小接入：router / pinia / unocss / title）
-for (const f of ['src/main.ts', 'src/App.vue', 'vite.config.ts', 'index.html'])
+for (const f of ['src/main.ts', 'src/App.vue', 'src/style.css', 'vite.config.ts', 'index.html'])
   run(`覆盖 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
 // 新增文件
 run('复制 uno.config.ts', sh.cpFile(path.join(templateRoot, 'uno.config.ts'), path.join(target, 'uno.config.ts')))

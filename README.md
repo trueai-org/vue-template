@@ -57,8 +57,8 @@ pnpm build            # 更新后验证构建
 - [https://unocss.dev/interactive/](https://unocss.dev/interactive/)
 
 - **Preset**：使用 `presetWind3`（`presetUno` 已弃用，见 [Presets](https://unocss.dev/guide/presets)）
-- **Style Reset**：UnoCSS 默认不含 reset/preflight（见 [Reset](https://unocss.dev/guide/style-reset)），官方 create-vite 的 `style.css` 已提供基础样式。如需 Tailwind preflight：`pnpm add @unocss/reset` + `import '@unocss/reset/tailwind-v4.css'`
-- **Vite 集成**：`plugins: [vue(), UnoCSS()]` + `import 'virtual:uno.css'`（见 [Vite](https://unocss.dev/integrations/vite)）
+- **Style Reset**：使用 `@unocss/reset/tailwind-v4.css` 作为默认样式（见 [Reset](https://unocss.dev/guide/style-reset)），官方 `style.css` 已清空。`border` 等原子类可直接生效
+- **Vite 集成**：`plugins: [vue(), UnoCSS()]` + `import '@unocss/reset/tailwind-v4.css'` + `import 'virtual:uno.css'`（见 [Vite](https://unocss.dev/integrations/vite)）
 
 
 
@@ -84,11 +84,12 @@ npm create vite@latest "vue-template-<date>" -- --template vue-ts
 # 第 4 步：安装依赖（官方指令，拉取最新版）
 pnpm install                        # https://pnpm.io/cli/install
 pnpm add pinia@^3 vue-router axios  # https://pnpm.io/cli/add
-pnpm add -D unocss @iconify-json/carbon
+pnpm add -D unocss @iconify-json/carbon @unocss/reset
 
 # 第 5 步：通过脚本注入接入文件 + 新增自定义模块（不手动改官方文件）
 copy /y src/main.ts     target/src/main.ts      # 接入 router/pinia/unocss
 copy /y src/App.vue     target/src/App.vue      # 改为 RouterView
+copy /y src/style.css   target/src/style.css     # 清空，用 @unocss/reset 替代
 copy /y vite.config.ts  target/vite.config.ts   # 加 UnoCSS 插件
 copy /y index.html      target/index.html        # 改 title
 copy /y uno.config.ts   target/uno.config.ts     # 新增
@@ -123,7 +124,7 @@ vue-template/
 ├── src/
 │   ├── main.ts             # 官方（脚本加 router + pinia + uno.css 接入）
 │   ├── App.vue             # 官方（脚本改为 RouterView + 导航）
-│   ├── style.css           # 官方，不改（含暗色模式 prefers-color-scheme）
+│   ├── style.css           # 官方（脚本清空，用 @unocss/reset 替代）
 │   ├── components/         # 官方，不改（HelloWorld.vue）
 │   ├── assets/             # 官方，不改
 │   ├── router/index.ts     # 新增：路由
@@ -135,7 +136,7 @@ vue-template/
 └── .github/workflows/      # 新增（daily-build.yml）
 ```
 
-**官方文件仅 4 处由脚本注入修改**：`src/main.ts`、`src/App.vue`、`vite.config.ts`、`index.html`。其余官方文件一律不动。
+**官方文件仅 5 处由脚本注入修改**：`src/main.ts`、`src/App.vue`、`src/style.css`（清空）、`vite.config.ts`、`index.html`。其余官方文件一律不动。
 
 ## 每日构建
 
