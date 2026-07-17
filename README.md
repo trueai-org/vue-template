@@ -263,7 +263,7 @@ cd my-app
 
 - **命令说明**：`npm create vite@latest` 等同 `npm init vite@latest`，通过 npx 拉取最新 `create-vite` 执行脚手架；`--` 分隔 npx 与脚手架参数；`--template vue-ts` 指定 Vue + TypeScript 模板。
 - **用途**：生成 Vite 官方 vue-ts 基础项目（含 `vite.config.ts`、`tsconfig*.json`、`src/main.ts`、`App.vue`、`HelloWorld.vue` 等），作为起点。
-- **官网**：[create-vite](https://github.com/vitejs/create-vite) · [Vite 脚手架](https://vite.dev/guide/#scaffolding-your-first-vite-project) · [npm init / create](https://docs.npmjs.com/cli/v10/commands/npm-init)
+- **官网**：[create-vite](https://github.com/vitejs/create-vite) · [Vite 脚手架](https://vite.dev/guide/#scaffolding-your-first-vite-project) / [vue-ts](https://vite.new/vue-ts) · [npm init / create](https://docs.npmjs.com/cli/v10/commands/npm-init)
 
 #### 第 2 步：安装基础依赖
 
@@ -560,3 +560,6 @@ vue-template/
 - **CI**：`.github/workflows/daily-build.yml` 每天 UTC 02:00 自动构建 + 打 `daily-YYYY-MM-DD` tag
 - **本地**：`node scripts/build.mjs`
 
+## TODO
+
+- 如何更新当前模板同时保持与官方模板一致呢？官方模板是通过 `npm create vite@latest` 生成的，直接下载代码？还是？[vue-ts](https://vite.dev/guide/#scaffolding-your-first-vite-project)
