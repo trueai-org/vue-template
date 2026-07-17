@@ -4,10 +4,10 @@
  * 以 npm create vite@latest 生成的最新官方模板为基准，对比并同步到当前项目。
  * 默认 dry-run（只显示差异），--apply 才实际执行。
  *
- * 文件分类（与 generate.mjs 一致）：
- * - 官方未修改文件：安全覆盖（tsconfig、.gitignore、public/、components/、assets/）
- * - 官方脚本修改文件：有变更时提示，需人工审查（main.ts、App.vue、style.css、vite.config.ts、index.html）
- * - 自定义文件：不动（router/、stores/、api/、views/、uno.config.ts、scripts/、.github/、.env*）
+ * 文件分类清单见 scripts/manifest.mjs（单一事实来源，与 generate.mjs 共用）：
+ * - 官方未修改文件：安全覆盖（tsconfig、public/、components/、assets/）
+ * - 官方脚本修改文件（OFFICIAL_MODIFIED）：有变更时提示，需人工审查
+ * - 自定义文件（CUSTOM_DIRS / CUSTOM_FILES / CUSTOM_DOCS）：不动
  *
  * 用法：
  *   node scripts/sync.mjs            # 预览模式
@@ -18,49 +18,28 @@ import { mkdirSync, readFileSync, readdirSync, statSync, rmSync, copyFileSync } 
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { CUSTOM_DIRS, CUSTOM_DOCS, CUSTOM_FILES, OFFICIAL_DEP_KEYS, OFFICIAL_MODIFIED } from './manifest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templateRoot = path.resolve(__dirname, '..')
 const apply = process.argv.includes('--apply')
 
-// ===== 文件分类（与 generate.mjs 一致）=====
+// ===== 文件分类（清单定义见 scripts/manifest.mjs）=====
 
 // 官方文件（脚本修改）：当前项目中的自定义版本覆盖了官方版本
-const OFFICIAL_MODIFIED = new Set([
-  'src/main.ts',
-  'src/App.vue',
-  'src/style.css',
-  'vite.config.ts',
-  'index.html',
-  '.gitignore', // 脚本追加 /releases
-])
+const OFFICIAL_MODIFIED_SET = new Set(OFFICIAL_MODIFIED)
 
-// 自定义文件/目录：同步时不动
+// 自定义文件/目录（同步时不动）+ 运行时排除路径
 const CUSTOM_PATHS = new Set([
-  'src/router',
-  'src/stores',
-  'src/api',
-  'src/views',
-  'src/auto-imports.d.ts',
-  'src/components.d.ts',
-  'uno.config.ts',
-  'scripts',
-  '.github',
-  '.env',
-  '.env.development',
-  'README.md',
+  ...CUSTOM_DIRS,
+  ...CUSTOM_FILES,
+  ...CUSTOM_DOCS,
   'pnpm-lock.yaml',
   'releases',
   'node_modules',
   'dist',
   '.git',
 ])
-
-// 官方依赖（create-vite 生成的 package.json 中的依赖）
-const OFFICIAL_DEP_KEYS = {
-  dependencies: ['vue'],
-  devDependencies: ['@vitejs/plugin-vue', '@vue/tsconfig', 'typescript', 'vite', 'vue-tsc', '@types/node'],
-}
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'releases'])
 const SKIP_FILES = new Set(['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock'])
@@ -137,7 +116,7 @@ try {
 
     if (currentContent === null) {
       newFiles.push(relPath)
-    } else if (OFFICIAL_MODIFIED.has(norm)) {
+    } else if (OFFICIAL_MODIFIED_SET.has(norm)) {
       manualReview.push(relPath)
     } else {
       autoApply.push(relPath)

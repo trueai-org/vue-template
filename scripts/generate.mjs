@@ -13,6 +13,7 @@ import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { CUSTOM_DIRS, CUSTOM_FILES, SNAPSHOT_OVERRIDE_FILES } from './manifest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templateRoot = path.resolve(__dirname, '..')
@@ -65,18 +66,14 @@ run('pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-
 
 // ===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====
 console.log('\n===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====')
-// 覆盖官方 4 个文件（最小接入：router / pinia / unocss / title）
-for (const f of ['src/main.ts', 'src/App.vue', 'src/style.css', 'vite.config.ts', 'index.html'])
+// 覆盖官方接入文件（最小接入：router / pinia / unocss / title，清单见 manifest.mjs）
+for (const f of SNAPSHOT_OVERRIDE_FILES)
   run(`覆盖 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
-// 新增文件
-run('复制 uno.config.ts', sh.cpFile(path.join(templateRoot, 'uno.config.ts'), path.join(target, 'uno.config.ts')))
-for (const f of ['.env', '.env.development'])
+// 新增自定义文件（uno 配置 / 环境变量 / 可选集成生成的类型声明）
+for (const f of CUSTOM_FILES)
   run(`复制 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
-// 可选集成生成的类型声明（vue-tsc 在 vite 之前运行，需预先存在）
-for (const f of ['src/auto-imports.d.ts', 'src/components.d.ts'])
-  run(`复制 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
-// 新增目录
-for (const d of ['src/router', 'src/stores', 'src/api', 'src/views', 'scripts', '.github'])
+// 新增自定义目录
+for (const d of CUSTOM_DIRS)
   run(`复制 ${d}/`, sh.cpDir(path.join(templateRoot, d), path.join(target, d)))
 
 // ===== 第 6 步：验证历史版本 =====

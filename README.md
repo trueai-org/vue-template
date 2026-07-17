@@ -187,7 +187,7 @@ pnpm remove unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-compo
 2. 移除配置：删除 `vite.config.ts` 中 `AutoImport` / `Components` / `Icons` / `IconsResolver` 相关 import 与 3 个插件块（保留 `vue()` 与 `UnoCSS()`）
 3. 删除生成文件：`src/auto-imports.d.ts`、`src/components.d.ts`
 4. 移除使用：删除 `src/views/HomeView.vue` 中带「图标组件」注释的 `<div>` 块
-5. 同步 `scripts/generate.mjs`：删除第 4 步的 `pnpm add -D unplugin-...` 与第 5 步复制两个 `.d.ts` 的循环
+5. 同步脚本清单：删除 `scripts/generate.mjs` 第 4 步的 `pnpm add -D unplugin-...`，并从 `scripts/manifest.mjs` 的 `CUSTOM_FILES` 中移除两个 `.d.ts` 条目
 6. 验证：`pnpm build`
 
 移除后核心模板（Vue + Router + Pinia + Axios + UnoCSS）完全不受影响。
@@ -672,7 +672,7 @@ vue-template/
 ├── tsconfig.app.json       # 官方，不改
 ├── tsconfig.node.json      # 官方，不改
 ├── vite.config.ts          # 官方（脚本加 UnoCSS + 可选集成 unplugin 插件）
-├── .gitignore              # 官方，不改
+├── .gitignore              # 官方（脚本追加 /releases）
 ├── .env                    # 新增：环境变量
 ├── .env.development        # 新增：开发环境变量
 ├── public/                 # 官方，不改
@@ -689,11 +689,11 @@ vue-template/
 │   ├── api/request.ts      # 新增：Axios 实例
 │   └── views/              # 新增：页面（HomeView / AboutView）
 ├── uno.config.ts           # 新增：UnoCSS 配置
-├── scripts/                # 新增（build.mjs / generate.mjs）
+├── scripts/                # 新增（build.mjs / generate.mjs / sync.mjs / manifest.mjs）
 └── .github/workflows/      # 新增（daily-build.yml）
 ```
 
-**官方文件仅 5 处由脚本注入修改**：`src/main.ts`、`src/App.vue`、`src/style.css`（清空）、`vite.config.ts`、`index.html`。其余官方文件一律不动。
+**官方文件仅 6 处由脚本注入修改**：`src/main.ts`、`src/App.vue`、`src/style.css`（清空）、`vite.config.ts`、`index.html`、`.gitignore`（追加 `/releases`）。其余官方文件一律不动。文件分类清单的单一事实来源为 `scripts/manifest.mjs`，`generate.mjs` 与 `sync.mjs` 均从此导入。
 
 ## 每日构建
 
@@ -709,13 +709,13 @@ pnpm sync              # 预览模式（只显示差异，不修改文件）
 pnpm sync -- --apply   # 实际同步（覆盖官方未修改文件 + 验证构建）
 ```
 
-**文件分类与处理策略**（与 `generate.mjs` 一致）：
+**文件分类与处理策略**（清单定义见 `scripts/manifest.mjs`，与 `generate.mjs` 共用）：
 
 | 分类 | 文件 | 同步策略 |
 |------|------|----------|
 | 官方未修改 | `tsconfig*.json`、`.gitignore`、`public/`、`src/components/`、`src/assets/` | 有差异时自动覆盖 |
-| 官方脚本修改 | `src/main.ts`、`src/App.vue`、`src/style.css`、`vite.config.ts`、`index.html` | 有差异时提示，需人工审查 |
-| 自定义 | `src/router/`、`src/stores/`、`src/api/`、`src/views/`、`uno.config.ts`、`scripts/`、`.github/`、`.env*` | 不动 |
+| 官方脚本修改 | `src/main.ts`、`src/App.vue`、`src/style.css`、`vite.config.ts`、`index.html`、`.gitignore` | 有差异时提示，需人工审查 |
+| 自定义 | `src/router/`、`src/stores/`、`src/api/`、`src/views/`、`uno.config.ts`、`scripts/`、`.github/`、`.env*`、`src/*.d.ts`、`README.md` | 不动 |
 
 **同步流程**：
 
