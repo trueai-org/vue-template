@@ -200,25 +200,6 @@ export const MODULES = {
     },
   },
 
-  hooks: {
-    label: 'Git 钩子（Husky + lint-staged + commitlint）',
-    tier: 'optional',
-    requires: ['quality'], // lint-staged 调用 eslint / prettier，选中 hooks 自动补齐 quality
-    deps: {
-      dev: [
-        'husky', // Git hooks 管理（pre-commit / commit-msg）
-        'lint-staged', // 只对暂存区文件执行 lint/format，避免全量检查
-        '@commitlint/cli', // commit message 规范检查
-        '@commitlint/config-conventional', // Conventional Commits 规则预设
-      ],
-    },
-    dirs: ['.husky'],
-    files: ['commitlint.config.js', '.lintstagedrc.json'],
-    scripts: {
-      prepare: 'husky',
-    },
-  },
-
   test: {
     label: '单元测试（Vitest + Vue Test Utils）',
     tier: 'optional',

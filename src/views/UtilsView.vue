@@ -40,11 +40,15 @@ const diffDays = computed(() => dayjs('2026-01-01').diff(now, 'day'))
 
 <template>
   <section class="m-4 p-4 border border-gray-300 rounded-lg space-y-6">
-    <h1 class="text-2xl font-bold mb-2">运行时工具演示</h1>
+    <h1 class="text-2xl font-bold mb-2">
+      运行时工具演示
+    </h1>
 
     <!-- @vueuse/core：暗色模式 -->
     <div class="space-y-2">
-      <h2 class="text-lg font-semibold">@vueuse/core — useDark</h2>
+      <h2 class="text-lg font-semibold">
+        @vueuse/core — useDark
+      </h2>
       <p>当前模式：{{ isDark ? '暗色' : '亮色' }}</p>
       <button
         class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -56,36 +60,48 @@ const diffDays = computed(() => dayjs('2026-01-01').diff(now, 'day'))
 
     <!-- @vueuse/core：鼠标位置 -->
     <div class="space-y-2">
-      <h2 class="text-lg font-semibold">@vueuse/core — useMouse</h2>
+      <h2 class="text-lg font-semibold">
+        @vueuse/core — useMouse
+      </h2>
       <p>x: {{ x }}, y: {{ y }}</p>
     </div>
 
     <!-- @vueuse/core：持久化存储 -->
     <div class="space-y-2">
-      <h2 class="text-lg font-semibold">@vueuse/core — useStorage</h2>
+      <h2 class="text-lg font-semibold">
+        @vueuse/core — useStorage
+      </h2>
       <input
         v-model="note"
         class="border border-gray-300 rounded px-2 py-1 w-full max-w-md"
         placeholder="输入内容会自动保存到 localStorage"
-      />
-      <p class="text-sm text-gray-500">已保存：{{ note || '(空)' }}（刷新页面后仍在）</p>
+      >
+      <p class="text-sm text-gray-500">
+        已保存：{{ note || '(空)' }}（刷新页面后仍在）
+      </p>
     </div>
 
     <!-- @vueuse/core：防抖 -->
     <div class="space-y-2">
-      <h2 class="text-lg font-semibold">@vueuse/core — useDebounceFn</h2>
+      <h2 class="text-lg font-semibold">
+        @vueuse/core — useDebounceFn
+      </h2>
       <input
         v-model="searchText"
         class="border border-gray-300 rounded px-2 py-1 w-full max-w-md"
         placeholder="输入后 500ms 触发"
         @input="onSearch(searchText)"
-      />
-      <p class="text-sm text-gray-500">防抖结果：{{ debouncedResult || '(等待中...)' }}</p>
+      >
+      <p class="text-sm text-gray-500">
+        防抖结果：{{ debouncedResult || '(等待中...)' }}
+      </p>
     </div>
 
     <!-- dayjs：日期格式化与相对时间 -->
     <div class="space-y-2">
-      <h2 class="text-lg font-semibold">dayjs — 日期处理</h2>
+      <h2 class="text-lg font-semibold">
+        dayjs — 日期处理
+      </h2>
       <p>当前时间：{{ formatted }}</p>
       <p>相对时间：{{ relative }}</p>
       <p>距 2026-01-01：{{ diffDays }} 天</p>
