@@ -697,7 +697,7 @@ vue-template/
 
 ## 每日构建
 
-- **CI**：`.github/workflows/daily-build.yml` 每天 UTC 02:00 自动构建 + 打 `daily-YYYY-MM-DD` tag
+- **CI**：`.github/workflows/daily-build.yml` 每天 UTC 02:00 自动构建 + 发布 GitHub Release（`daily-YYYY-MM-DD` tag + `dist.zip` 产物附件）
 - **本地**：`node scripts/build.mjs`
 
 ## TODO
