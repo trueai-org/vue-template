@@ -154,10 +154,7 @@ export const MODULES = {
         '@iconify/json', // unplugin-icons 全量图标数据源
       ],
     },
-    files: [
-      'src/auto-imports.d.ts', // 集成层生成：vue-tsc 先于 Vite 运行，需预先存在
-      'src/components.d.ts', // 同上
-    ],
+    files: [],
   },
 
   quality: {

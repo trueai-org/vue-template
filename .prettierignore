@@ -2,5 +2,5 @@ dist
 node_modules
 releases
 pnpm-lock.yaml
-src/auto-imports.d.ts
-src/components.d.ts
+auto-imports.d.ts
+components.d.ts

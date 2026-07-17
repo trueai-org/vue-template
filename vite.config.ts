@@ -35,15 +35,15 @@ export default defineConfig({
     // 依赖：unplugin-auto-import；移除：删除本块 + src/auto-imports.d.ts
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
-      dts: 'src/auto-imports.d.ts',
+      dts: true,
     }),
 
     // [可选] 组件自动导入 + 图标组件解析
     // 依赖：unplugin-vue-components + unplugin-icons + @iconify/json
-    // 移除：删除本块与下方 Icons() + src/components.d.ts
+    // 移除：删除本块与下方 Icons() + components.d.ts
     Components({
       resolvers: [IconsResolver()],
-      dts: 'src/components.d.ts',
+      dts: true,
     }),
 
     // [可选] 图标按需编译为 Vue 组件（数据源 @iconify/json）

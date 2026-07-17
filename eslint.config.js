@@ -13,8 +13,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'releases/**',
-      'src/auto-imports.d.ts',
-      'src/components.d.ts',
+      'auto-imports.d.ts',
+      'components.d.ts',
     ],
   },
 
