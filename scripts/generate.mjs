@@ -3,7 +3,8 @@
  * 每日历史版本生成器
  * 基于 npm create vite 官方模板，新增自定义模块，生成可重现的历史快照。
  * 不删除官方文件，只覆盖必要接入文件 + 新增模块。
- *
+ * 不删除历史目录，避免删错，目录名含时分秒，正常不冲突。
+ * 
  * 用法：
  *   node scripts/generate.mjs                # 完整流程（含当前项目验证）
  *   node scripts/generate.mjs --skip-verify  # 跳过当前项目验证
@@ -16,13 +17,15 @@ import path from 'node:path'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templateRoot = path.resolve(__dirname, '..')
 const releasesRoot = path.resolve(templateRoot, 'releases')
-const date = new Date().toISOString().slice(0, 10)
-const target = path.join(releasesRoot, `vue-template-${date}`)
+// 目录名含时分秒，避免同日多次生成冲突
+const now = new Date()
+const p = n => String(n).padStart(2, '0')
+const stamp = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}_${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`
+const target = path.join(releasesRoot, `vue-template-${stamp}`)
 const skipVerify = process.argv.includes('--skip-verify')
 const isWin = process.platform === 'win32'
 
 const sh = {
-  rmDir: d => isWin ? `rmdir /s /q "${d}"` : `rm -rf "${d}"`,
   cpDir: (s, d) => isWin ? `xcopy /e /i /y /q "${s}" "${d}"` : `cp -r "${s}" "${d}"`,
   cpFile: (s, d) => isWin ? `copy /y "${s}" "${d}" >nul` : `cp "${s}" "${d}"`,
 }
@@ -44,19 +47,21 @@ else {
 // ===== 第 2 步：创建历史目录 =====
 console.log('\n===== 第 2 步：创建历史目录 =====')
 mkdirSync(releasesRoot, { recursive: true })
+// 不执行任何删除操作，避免误删；目录已含时分秒，正常不冲突，若已存在则直接终止
 if (existsSync(target))
-  run('清理旧目录', sh.rmDir(target))
+  throw new Error(`目标目录已存在，已终止（不自动删除以免误删）：${target}\n如确需覆盖请手动删除后重试。`)
 console.log(`  目标: ${target}`)
 
 // ===== 第 3 步：官方脚手架创建基础项目 =====
 console.log('\n===== 第 3 步：官方脚手架创建基础项目 =====')
-run('npm create vite (vue-ts)', `npm create vite@latest "vue-template-${date}" -- --template vue-ts`, releasesRoot)
+run('npm create vite (vue-ts)', `npm create vite@latest "vue-template-${stamp}" -- --template vue-ts`, releasesRoot)
 
 // ===== 第 4 步：安装依赖（官方指令，拉取最新版）=====
 console.log('\n===== 第 4 步：安装依赖 =====')
 run('pnpm install', 'pnpm install', target)
 run('pnpm add pinia@^3 vue-router axios', 'pnpm add pinia@^3 vue-router axios', target)
 run('pnpm add -D unocss @iconify-json/carbon @unocss/reset', 'pnpm add -D unocss @iconify-json/carbon @unocss/reset', target)
+run('pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components', 'pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components', target)
 
 // ===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====
 console.log('\n===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====')
@@ -66,6 +71,9 @@ for (const f of ['src/main.ts', 'src/App.vue', 'src/style.css', 'vite.config.ts'
 // 新增文件
 run('复制 uno.config.ts', sh.cpFile(path.join(templateRoot, 'uno.config.ts'), path.join(target, 'uno.config.ts')))
 for (const f of ['.env', '.env.development'])
+  run(`复制 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
+// 可选集成生成的类型声明（vue-tsc 在 vite 之前运行，需预先存在）
+for (const f of ['src/auto-imports.d.ts', 'src/components.d.ts'])
   run(`复制 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
 // 新增目录
 for (const d of ['src/router', 'src/stores', 'src/api', 'src/views', 'scripts', '.github'])

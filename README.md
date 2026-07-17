@@ -11,6 +11,7 @@
 5. **不过度封装** - 无 bootstrap、无 http 解包封装、无 UI 组件封装
 6. **所有命令遵循官方文档** - 每个命令附官方文档地址
 7. **模块依赖独立可移除** - 新增的任何模块/依赖都必须独立：配置隔离、使用隔离、可单独迁移/测试/替换/移除。每个自定义依赖须在 README 标注「依赖清单」及其移除步骤，删除时不应牵连其他模块
+8. **依赖更新** - 默认基础包 `vue/typescript` 等是通过 `npm create vite` 生成的，任何安装的依赖都要兼容此版本，而不是盲目使用最新版本
 
 ## 官方命令与文档
 
@@ -60,7 +61,8 @@ pnpm build            # 更新后验证构建
 - **Preset**：使用 `presetWind3`（`presetUno` 已弃用，见 [Presets](https://unocss.dev/guide/presets)）
 - **Style Reset**：使用 `@unocss/reset/tailwind-v4.css` 作为默认样式（见 [Reset](https://unocss.dev/guide/style-reset)），官方 `style.css` 已清空。`border` 等原子类可直接生效
 - **Vite 集成**：`plugins: [vue(), UnoCSS()]` + `import '@unocss/reset/tailwind-v4.css'` + `import 'virtual:uno.css'`（见 [Vite](https://unocss.dev/integrations/vite)）
-- **图标（独立模块）**：`presetIcons` + `@iconify-json/carbon` 提供 Carbon 图标集，使用原子类 `i-carbon-<name>`（如 `i-carbon-home`）。演示见 `src/views/HomeView.vue` 的图标块。图标查询：[icones.js.org](https://icones.js.org/) · [UnoCSS Icons preset](https://unocss.dev/presets/icons)
+- **图标（独立模块）**：`presetIcons` + `@iconify-json/carbon` 提供 Carbon 图标集，使用原子类 `i-carbon-<name>`（如 `<i class="i-carbon-home" />`）。演示见 `src/views/HomeView.vue` 的「图标类」块。图标查询：[icones.js.org](https://icones.js.org/) · [UnoCSS Icons preset](https://unocss.dev/presets/icons)
+- **图标组件（可选集成的另一种方案）**：通过 `unplugin-icons` + `unplugin-vue-components` 可把图标当作 Vue 组件使用（如 `<i-carbon-home />`），数据源为 `@iconify/json`（全量图标集）。与上述原子类方案并存、各自独立可移除，详见下方「可选集成」
 
 
 
@@ -75,9 +77,13 @@ pnpm build            # 更新后验证构建
 | `axios` | 运行时 | `src/api/request.ts` | 按需 import | [Axios](https://axios-http.com) |
 | `unocss` | 开发 | `uno.config.ts` · `vite.config.ts` 插件 | `src/main.ts` 引入 reset + virtual | [UnoCSS](https://unocss.dev) |
 | `@unocss/reset` | 开发 | `src/main.ts` 引入 `tailwind-v4.css` | `src/style.css` 已清空 | [Reset](https://unocss.dev/guide/style-reset) |
-| `@iconify-json/carbon` | 开发 | `uno.config.ts` 的 `presetIcons` | `src/views/HomeView.vue` 图标块 | [Icons preset](https://unocss.dev/presets/icons) |
+| `@iconify-json/carbon` | 开发 | `uno.config.ts` 的 `presetIcons` | `src/views/HomeView.vue`「图标类」块 | [Icons preset](https://unocss.dev/presets/icons) |
+| `unplugin-auto-import` | 开发·可选 | `vite.config.ts` 的 `AutoImport()` | 生成 `src/auto-imports.d.ts` | [unplugin-auto-import](https://github.com/unplugin/unplugin-auto-import) |
+| `unplugin-vue-components` | 开发·可选 | `vite.config.ts` 的 `Components()` | 生成 `src/components.d.ts` | [unplugin-vue-components](https://github.com/unplugin/unplugin-vue-components) |
+| `unplugin-icons` | 开发·可选 | `vite.config.ts` 的 `Icons()` + `IconsResolver` | `src/views/HomeView.vue`「图标组件」块 | [unplugin-icons](https://github.com/unplugin/unplugin-icons) |
+| `@iconify/json` | 开发·可选 | `unplugin-icons` 数据源 | 同上 | [Iconify JSON](https://iconify.design/docs/develop/json.html) |
 
-### 移除图标库（示例：独立移除一个模块）
+### 移除图标类库（UnoCSS 图标层，独立移除）
 
 ```bash
 pnpm remove @iconify-json/carbon
@@ -85,10 +91,108 @@ pnpm remove @iconify-json/carbon
 
 1. 卸载包：`pnpm remove @iconify-json/carbon`
 2. 移除配置：删除 `uno.config.ts` 中的 `presetIcons(...)`（保留 `presetWind3`）
-3. 移除使用：删除 `src/views/HomeView.vue` 中带「图标演示」注释的 `<div>` 块
+3. 移除使用：删除 `src/views/HomeView.vue` 中带「图标类」注释的 `<div>` 块
 4. 验证：`pnpm build`
 
 移除后 UnoCSS 原子类与其他模块不受影响。换用其他图标集（如 `@iconify-json/mdi`）只需替换包名与 `i-mdi-<name>` 类名前缀。
+
+
+
+## 可选集成（unplugin 系列）
+
+> 以下 4 个 `unplugin` 插件构成一层「可选集成」，均已在 `vite.config.ts` 中以独立注释块配置，可整体或单独移除（遵循规则 7）。
+> 它们是**编译期** Vite 插件，不影响运行时产物体积（按需编译、Tree-shaking）。
+
+### 一、安装
+
+```bash
+pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components
+```
+
+> 项目使用 pnpm（规则 3），等价于用户给的 `yarn add -D ...`。官方安装文档：[pnpm add](https://pnpm.io/cli/add)
+
+### 二、配置（`vite.config.ts`）
+
+```ts
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import Icons from 'unplugin-icons/vite'
+import IconsResolver from 'unplugin-icons/resolver'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    UnoCSS(),
+    // [可选] API 自动导入
+    AutoImport({ imports: ['vue', 'vue-router', 'pinia'], dts: 'src/auto-imports.d.ts' }),
+    // [可选] 组件自动导入 + 图标组件解析
+    Components({ resolvers: [IconsResolver()], dts: 'src/components.d.ts' }),
+    // [可选] 图标按需编译为 Vue 组件
+    Icons({ compiler: 'vue3' }),
+  ],
+})
+```
+
+### 三、各模块说明
+
+| 插件 | 用途 | 官方文档 |
+| --- | --- | --- |
+| `unplugin-auto-import` | 自动导入 `vue` / `vue-router` / `pinia` 的 API，无需手动 `import { ref } from 'vue'` | [README](https://github.com/unplugin/unplugin-auto-import) |
+| `unplugin-vue-components` | 自动导入 `src/components` 下的组件，并解析图标组件；生成 `components.d.ts` | [README](https://github.com/unplugin/unplugin-vue-components) |
+| `unplugin-icons` | 把图标按需编译为 Vue 组件（`<i-carbon-home />`），配合 `IconsResolver` 自动注册 | [README](https://github.com/unplugin/unplugin-icons) · [可用图标](https://icones.js.org/) |
+| `@iconify/json` | 全量图标数据集，作为 `unplugin-icons` 的数据源（含 200+ 图标集） | [Iconify JSON](https://iconify.design/docs/develop/json.html) |
+
+### 四、使用示例
+
+**图标组件**（`src/views/HomeView.vue` 已演示，无需 import）：
+
+```vue
+<i-carbon-home class="text-green-600" />
+<i-carbon-information class="text-blue-600" />
+```
+
+- 命名规则：`i-<集合>-<图标名>`，如 `i-carbon-home` → 组件 `<i-carbon-home />`
+- 图标查询：[icones.js.org](https://icones.js.org/)
+- 与 UnoCSS 原子类图标 `<i class="i-carbon-home" />` 是两种并存方案，互不依赖
+
+**API 自动导入**（可选，本项目源码仍保留显式 import 以保证可移除性）：
+
+```vue
+<script setup lang="ts">
+// 无需 import { ref } from 'vue'，自动注入
+const count = ref(0)
+</script>
+```
+
+> 本模板源码统一使用显式 `import`，使 `unplugin-auto-import` 可被干净移除而不改动任何业务代码。自动导入仅作为开发便利启用。
+
+### 五、生成的类型声明文件
+
+插件会在 `src/` 下生成两个 `.d.ts`（已提交，供 `vue-tsc` 在 Vite 之前类型检查）：
+
+| 文件 | 生成者 | 作用 |
+| --- | --- | --- |
+| `src/auto-imports.d.ts` | `unplugin-auto-import` | 声明自动注入的全局 API（`ref` / `computed` / `useRoute` 等） |
+| `src/components.d.ts` | `unplugin-vue-components` | 声明自动解析的全局组件（含图标组件 `ICarbonHome` 等） |
+
+> `pnpm build` = `vue-tsc -b && vite build`，`vue-tsc` 先于 Vite 运行，故这两个文件需预先存在。首次接入或克隆后若缺失，先执行一次 `npx vite build`（或 `pnpm dev`）即可生成。`generate.mjs` 已将它们复制到历史快照。
+
+### 六、移除（整体移除可选集成层）
+
+```bash
+pnpm remove unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components
+```
+
+1. 卸载 4 个包（见上）
+2. 移除配置：删除 `vite.config.ts` 中 `AutoImport` / `Components` / `Icons` / `IconsResolver` 相关 import 与 3 个插件块（保留 `vue()` 与 `UnoCSS()`）
+3. 删除生成文件：`src/auto-imports.d.ts`、`src/components.d.ts`
+4. 移除使用：删除 `src/views/HomeView.vue` 中带「图标组件」注释的 `<div>` 块
+5. 同步 `scripts/generate.mjs`：删除第 4 步的 `pnpm add -D unplugin-...` 与第 5 步复制两个 `.d.ts` 的循环
+6. 验证：`pnpm build`
+
+移除后核心模板（Vue + Router + Pinia + Axios + UnoCSS）完全不受影响。
+
+> **体积提示**：`@iconify/json` 为全量图标集（约 70MB+，含 200+ 图标集）。若只需少量图标集，可改用按需的 `@iconify-json/<set>`（如已安装的 `@iconify-json/carbon`），并在 `unplugin-icons` 中以离线模式加载，详见 [unplugin-icons 离线模式](https://github.com/unplugin/unplugin-icons#installation)。
 
 
 
@@ -101,7 +205,7 @@ pnpm generate                  # 完整流程（含当前项目验证）
 pnpm generate -- --skip-verify # 跳过当前验证
 ```
 
-生成到 `./releases/vue-template-<date>/`。脚本实现见 `scripts/generate.mjs`。
+生成到 `./releases/vue-template-<stamp>/`，`<stamp>` 为本地时间 `YYYY-MM-DD_HHmmss`（含时分秒，避免同日多次生成冲突）。脚本实现见 `scripts/generate.mjs`。
 
 ### 方式二：手动执行流程
 
@@ -111,12 +215,12 @@ pnpm generate -- --skip-verify # 跳过当前验证
 #### 准备：设置路径变量
 
 ```powershell
-$date = Get-Date -Format "yyyy-MM-dd"
-$src  = "."                              # 当前模板根目录
-$dst  = ".\releases\vue-template-$date"  # 历史版本目标目录
+$stamp = Get-Date -Format "yyyy-MM-dd_HHmmss"  # 本地时间，含时分秒避免冲突
+$src   = "."                                    # 当前模板根目录
+$dst   = ".\releases\vue-template-$stamp"       # 历史版本目标目录
 ```
 
-- 用途：统一管理日期与路径，后续步骤复用。
+- 用途：统一管理时间戳与路径，后续步骤复用。
 - 官方文档：[Get-Date](https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/get-date)
 
 ---
@@ -136,12 +240,11 @@ pnpm build
 
 ```powershell
 New-Item -ItemType Directory -Force -Path ".\releases"
-if (Test-Path $dst) { Remove-Item -Recurse -Force $dst }
-New-Item -ItemType Directory -Path $dst
+if (Test-Path $dst) { Write-Error "目标目录已存在：$dst（不自动删除以免误删），请手动删除后重试"; exit 1 }
 ```
 
-- 用途：确保 `releases/` 存在；若同日期目标目录已存在则先清理；最后新建当日目标目录。
-- 官方文档：[New-Item](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/new-item) · [Remove-Item](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/remove-item) · [Test-Path](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/test-path)
+- 用途：确保 `releases/` 存在；**不执行任何删除**，避免误删导致数据丢失；若目标目录已存在则直接终止。目标目录本身由第 3 步 `npm create vite` 创建，此处不预建。
+- 官方文档：[New-Item](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/new-item) · [Test-Path](https://learn.microsoft.com/powershell/module/microsoft.powershell.management/test-path)
 - Node 等效：[`fs.mkdirSync`](https://nodejs.org/api/fs.html#fsmkdirsyncpath-options-callback)（脚本所用）
 
 ---
@@ -150,7 +253,7 @@ New-Item -ItemType Directory -Path $dst
 
 ```bash
 cd releases
-npm create vite@latest "vue-template-<date>" -- --template vue-ts
+npm create vite@latest "vue-template-<stamp>" -- --template vue-ts
 cd ..
 ```
 
@@ -162,10 +265,11 @@ cd ..
 #### 第 4 步：安装依赖（官方指令，拉取最新版）
 
 ```bash
-cd .\releases\vue-template-<date>
+cd .\releases\vue-template-<stamp>
 pnpm install
 pnpm add pinia@^3 vue-router axios
 pnpm add -D unocss @iconify-json/carbon @unocss/reset
+pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components
 cd ..\..
 ```
 
@@ -176,6 +280,7 @@ cd ..\..
 | `pnpm install` | 安装 create-vite 生成的 `package.json` 自带依赖 |
 | `pnpm add pinia@^3 vue-router axios` | 按官方方式添加运行时依赖（pinia 锁 `^3`，见兼容性约束） |
 | `pnpm add -D unocss ...` | `-D` 表示写入 `devDependencies`：UnoCSS 引擎、Carbon 图标集、CSS Reset |
+| `pnpm add -D unplugin-...` | 可选集成层：图标组件 + API/组件自动导入（详见「可选集成」） |
 
 - 官方文档：[pnpm install](https://pnpm.io/cli/install) · [pnpm add](https://pnpm.io/cli/add)
 
@@ -209,6 +314,16 @@ copy /y "$src\.env.development"    "$dst\.env.development"
 - 用途：UnoCSS 配置 + Vite 环境变量文件。
 - 官方文档：[Vite env variables](https://vite.dev/guide/env-and-mode.html) · [UnoCSS config](https://unocss.dev/guide/config-file)
 
+**5.2.1 复制可选集成的类型声明**（`vue-tsc` 先于 Vite 运行，需预先存在）
+
+```powershell
+copy /y "$src\src\auto-imports.d.ts"  "$dst\src\auto-imports.d.ts"
+copy /y "$src\src\components.d.ts"    "$dst\src\components.d.ts"
+```
+
+- 用途：可选集成（unplugin 系列）生成的全局类型声明，供 `vue-tsc` 类型检查自动导入的 API 与图标组件。详见「可选集成 → 生成的类型声明文件」。
+- 官方文档：[unplugin-auto-import dts](https://github.com/unplugin/unplugin-auto-import#typescript) · [unplugin-vue-components dts](https://github.com/unplugin/unplugin-vue-components#typescript)
+
 **5.3 新增模块目录**
 
 ```powershell
@@ -236,7 +351,7 @@ xcopy 参数拆解：
 #### 第 6 步：验证历史版本
 
 ```bash
-cd .\releases\vue-template-<date>
+cd .\releases\vue-template-<stamp>
 pnpm build
 cd ..\..
 ```
@@ -246,7 +361,7 @@ cd ..\..
 
 ---
 
-> 完成后历史版本位于 `./releases/vue-template-<date>/`，预览：`cd releases\vue-template-<date> && pnpm dev`。
+> 完成后历史版本位于 `./releases/vue-template-<stamp>/`，预览：`cd releases\vue-template-<stamp> && pnpm dev`。
 > 不删除官方文件，只覆盖 5 个接入文件 + 新增模块。官方 `HelloWorld.vue` / `assets/` 等全部保留不动。
 
 ### 方式三：从零手动创建（官方命令逐条）
@@ -289,13 +404,16 @@ pnpm add pinia@^3 vue-router axios
 
 ```bash
 pnpm add -D unocss @iconify-json/carbon @unocss/reset
+pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components
 ```
 
 - **命令说明**：`-D` / `--save-dev` 写入 `devDependencies`（仅构建期需要，不进产物）。
-- **用途**：`unocss` 原子化 CSS 引擎 + Vite 插件；`@iconify-json/carbon` 提供 Carbon 图标集（`presetIcons` 按需加载）；`@unocss/reset` 提供 CSS Reset。
-- **官网**：[pnpm add](https://pnpm.io/cli/add) · [UnoCSS](https://unocss.dev) · [Icons preset](https://unocss.dev/presets/icons) · [Reset](https://unocss.dev/guide/style-reset)
+- **用途**：
+  - 第一行：`unocss` 原子化 CSS 引擎 + Vite 插件；`@iconify-json/carbon` 提供 Carbon 图标集（`presetIcons` 按需加载）；`@unocss/reset` 提供 CSS Reset。
+  - 第二行（可选集成）：`unplugin-icons` 图标按需编译为组件；`unplugin-auto-import` API 自动导入；`@iconify/json` 全量图标数据源；`unplugin-vue-components` 组件自动导入。详见「可选集成」。
+- **官网**：[pnpm add](https://pnpm.io/cli/add) · [UnoCSS](https://unocss.dev) · [Icons preset](https://unocss.dev/presets/icons) · [Reset](https://unocss.dev/guide/style-reset) · [unplugin-icons](https://github.com/unplugin/unplugin-icons) · [unplugin-auto-import](https://github.com/unplugin/unplugin-auto-import) · [unplugin-vue-components](https://github.com/unplugin/unplugin-vue-components)
 
-#### 第 5 步：配置 Vite 接入 UnoCSS 插件
+#### 第 5 步：配置 Vite（UnoCSS + 可选集成插件）
 
 编辑 `vite.config.ts`：
 
@@ -303,15 +421,28 @@ pnpm add -D unocss @iconify-json/carbon @unocss/reset
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import Icons from 'unplugin-icons/vite'
+import IconsResolver from 'unplugin-icons/resolver'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), UnoCSS()],
+  plugins: [
+    vue(),
+    UnoCSS(),
+    // [可选] API 自动导入
+    AutoImport({ imports: ['vue', 'vue-router', 'pinia'], dts: 'src/auto-imports.d.ts' }),
+    // [可选] 组件自动导入 + 图标组件解析
+    Components({ resolvers: [IconsResolver()], dts: 'src/components.d.ts' }),
+    // [可选] 图标按需编译为 Vue 组件
+    Icons({ compiler: 'vue3' }),
+  ],
 })
 ```
 
-- **用途**：在 Vite 插件链注册 `UnoCSS()`，使 `virtual:uno.css` 虚拟模块与原子类扫描生效。
-- **官网**：[Vite config](https://vite.dev/config/) · [UnoCSS Vite 集成](https://unocss.dev/integrations/vite)
+- **用途**：注册 `UnoCSS()`（原子类）；可选集成注册 `AutoImport` / `Components` / `Icons`，启用 API 自动导入与图标组件。每块独立注释，可单独移除。
+- **官网**：[Vite config](https://vite.dev/config/) · [UnoCSS Vite 集成](https://unocss.dev/integrations/vite) · [unplugin-auto-import](https://github.com/unplugin/unplugin-auto-import) · [unplugin-vue-components](https://github.com/unplugin/unplugin-vue-components) · [unplugin-icons](https://github.com/unplugin/unplugin-icons)
 
 #### 第 6 步：新建 UnoCSS 配置文件
 
@@ -450,11 +581,17 @@ export default request
       <span class="px-2 py-1 bg-green-500 text-white rounded">UnoCSS</span>
       <span class="px-2 py-1 bg-blue-500 text-white rounded">Vue3</span>
     </div>
-    <!-- 图标演示：依赖 @iconify-json/carbon + uno.config.ts 的 presetIcons，移除图标库时删除此块即可 -->
+    <!-- 图标类（UnoCSS presetIcons）：依赖 @iconify-json/carbon，移除图标库时删除此块即可 -->
     <div class="mt-4 flex items-center gap-3 text-xl">
       <i class="i-carbon-home text-green-600" />
       <i class="i-carbon-information text-blue-600" />
       <i class="i-carbon-logo-github text-gray-800" />
+    </div>
+    <!-- 图标组件（unplugin-icons + unplugin-vue-components）：依赖 @iconify/json，移除可选集成时删除此块即可 -->
+    <div class="mt-4 flex items-center gap-3 text-xl">
+      <i-carbon-home class="text-green-600" />
+      <i-carbon-information class="text-blue-600" />
+      <i-carbon-logo-github class="text-gray-800" />
     </div>
   </section>
 ```
@@ -473,8 +610,8 @@ export default request
 </template>
 ```
 
-- **用途**：两个路由页面，演示 UnoCSS 原子类（`m-4`、`text-red-400`、`flex` 等）生效；`HomeView` 内含独立图标演示块（`i-carbon-home` 等），依赖第 4 步的 `@iconify-json/carbon` 与第 6 步的 `presetIcons`。
-- **官网**：[UnoCSS 交互式查询](https://unocss.dev/interactive/) · [Icons preset](https://unocss.dev/presets/icons) · [图标查询 icones](https://icones.js.org/)
+- **用途**：两个路由页面，演示 UnoCSS 原子类（`m-4`、`text-red-400`、`flex` 等）生效；`HomeView` 含两种独立图标方案——「图标类」（UnoCSS，依赖 `@iconify-json/carbon` + 第 6 步 `presetIcons`）与「图标组件」（unplugin-icons，依赖第 4 步 `@iconify/json` + 第 5 步插件）。
+- **官网**：[UnoCSS 交互式查询](https://unocss.dev/interactive/) · [Icons preset](https://unocss.dev/presets/icons) · [图标查询 icones](https://icones.js.org/) · [unplugin-icons](https://github.com/unplugin/unplugin-icons)
 
 #### 第 14 步：新建环境变量文件
 
@@ -511,13 +648,14 @@ VITE_APP_BASE=/
 #### 第 16 步：验证构建
 
 ```bash
+npx vite build  # 首次：先生成可选集成的 .d.ts（auto-imports.d.ts / components.d.ts）
 pnpm build      # 类型检查 + 生产构建
 pnpm dev        # 启动开发服务器
 pnpm preview    # 预览构建产物
 ```
 
-- **用途**：`pnpm build` 即 `vue-tsc -b && vite build`，先类型检查再构建；`pnpm dev` 启动 HMR 开发服务器；`pnpm preview` 本地预览 `dist/`。
-- **官网**：[Vite CLI](https://vite.dev/guide/cli.html) · [vue-tsc](https://github.com/vuejs/language-tools)
+- **用途**：`pnpm build` 即 `vue-tsc -b && vite build`，先类型检查再构建。因 `vue-tsc` 先于 Vite 运行，可选集成（第 5 步）生成的 `.d.ts` 需预先存在，故首次先跑一次 `npx vite build`（或 `pnpm dev`）生成它们。`pnpm dev` 启动 HMR 开发服务器；`pnpm preview` 本地预览 `dist/`。
+- **官网**：[Vite CLI](https://vite.dev/guide/cli.html) · [vue-tsc](https://github.com/vuejs/language-tools) · [unplugin-auto-import dts](https://github.com/unplugin/unplugin-auto-import#typescript) · [unplugin-vue-components dts](https://github.com/unplugin/unplugin-vue-components#typescript)
 
 > 从零手动创建完成后，结构与「方式一/二」产物等价。官方 `HelloWorld.vue`、`components/`、`assets/`、`tsconfig*.json`、`.gitignore` 等均保留不动，仅改写/新增上述文件。
 
@@ -533,7 +671,7 @@ vue-template/
 ├── tsconfig.json           # 官方，不改
 ├── tsconfig.app.json       # 官方，不改
 ├── tsconfig.node.json      # 官方，不改
-├── vite.config.ts          # 官方（脚本加 UnoCSS 插件）
+├── vite.config.ts          # 官方（脚本加 UnoCSS + 可选集成 unplugin 插件）
 ├── .gitignore              # 官方，不改
 ├── .env                    # 新增：环境变量
 ├── .env.development        # 新增：开发环境变量
@@ -544,6 +682,8 @@ vue-template/
 │   ├── style.css           # 官方（脚本清空，用 @unocss/reset 替代）
 │   ├── components/         # 官方，不改（HelloWorld.vue）
 │   ├── assets/             # 官方，不改
+│   ├── auto-imports.d.ts   # 新增（可选集成生成）：自动导入 API 类型声明
+│   ├── components.d.ts     # 新增（可选集成生成）：自动解析组件类型声明
 │   ├── router/index.ts     # 新增：路由
 │   ├── stores/index.ts     # 新增：Pinia 实例
 │   ├── api/request.ts      # 新增：Axios 实例
@@ -561,5 +701,4 @@ vue-template/
 - **本地**：`node scripts/build.mjs`
 
 ## TODO
-
 - 如何更新当前模板同时保持与官方模板一致呢？官方模板是通过 `npm create vite@latest` 生成的，直接下载代码？还是？[vue-ts](https://vite.dev/guide/#scaffolding-your-first-vite-project)
