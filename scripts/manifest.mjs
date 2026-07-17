@@ -121,6 +121,7 @@ export const MODULES = {
         'pinia@^3', // 锁定主版本 3：pinia 4.x 需 typescript 7，当前 ts ~6.0.2 不兼容
         'vue-router',
       ],
+      dev: ['rimraf'], // 跨平台删除（pnpm clean 清理 releases/）
     },
     dirs: ['src/router', 'src/stores', 'src/api', 'scripts', '.github'],
     files: ['.env', '.env.development', 'src/views/HomeView.vue', 'src/views/AboutView.vue'],
@@ -128,6 +129,7 @@ export const MODULES = {
       typecheck: 'vue-tsc -b --noEmit',
       generate: 'node scripts/generate.mjs',
       sync: 'node scripts/sync.mjs',
+      clean: 'node scripts/clean.mjs',
       'update-latest': 'pnpm update --latest',
     },
   },

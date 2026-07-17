@@ -1,6 +1,9 @@
 name: Daily Build & Release
 
-# 每日定时构建 + 手动触发，自动发布 GitHub Release（含 dist.zip 产物）
+# 每日定时构建 + 手动触发，生成 3 种打包方案并发布 GitHub Release
+# - 完整包（dist-full.zip）：全部模块 + 默认选择组
+# - 默认包（dist-default.zip）：必需+默认模块 + 默认选择组
+# - 最小包（dist-minimal.zip）：仅必需模块 + 默认选择组
 on:
   schedule:
     # 每天 UTC 02:00（北京时间 10:00）
@@ -28,12 +31,28 @@ jobs:
       - name: 安装依赖（可重现）
         run: pnpm install --frozen-lockfile
 
-      - name: 生产构建（含类型检查）
+      # ===== 完整包：直接构建工作模板（全模块 + 默认选择组）=====
+      - name: 构建完整包（full）
         run: pnpm build
 
-      - name: 打包产物
-        run: cd dist && zip -r ../dist.zip .
+      - name: 打包完整包
+        run: cd dist && zip -r ../dist-full.zip .
 
+      # ===== 默认包：必需+默认模块（推荐配置）=====
+      - name: 生成默认包（default）
+        run: node scripts/generate.mjs --skip-verify --yes --output /tmp/default
+
+      - name: 打包默认包
+        run: cd /tmp/default/dist && zip -r /tmp/dist-default.zip .
+
+      # ===== 最小包：仅必需模块 =====
+      - name: 生成最小包（minimal）
+        run: node scripts/generate.mjs --skip-verify --minimal --output /tmp/minimal
+
+      - name: 打包最小包
+        run: cd /tmp/minimal/dist && zip -r /tmp/dist-minimal.zip .
+
+      # ===== 发布 =====
       - name: 获取日期
         id: date
         run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
@@ -46,8 +65,19 @@ jobs:
             echo "- Commit: \`${{ github.sha }}\`"
             echo "- 构建时间: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
             echo ""
+            echo "### 打包方案"
+            echo ""
+            echo "| 产物 | 方案 | 模块 | 说明 |"
+            echo "|------|------|------|------|"
+            echo "| \`dist-full.zip\` | 完整包 | 全部 7 模块 | 所有模块（含 hooks/test）+ 默认选择组 |"
+            echo "| \`dist-default.zip\` | 默认包 | 必需+默认 5 模块 | 推荐配置，不含 hooks/test |"
+            echo "| \`dist-minimal.zip\` | 最小包 | 仅 core | 最精简，仅 Router+Pinia+UnoCSS+Axios |"
+            echo ""
+            echo "> 选择组（CSS/HTTP）三包均用默认值：unocss + axios。"
+            echo "> 选择组互斥，不可同时安装多个同类框架。"
+            echo ""
             echo "### 最近提交"
-            echo '```'
+            echo '```'"
             git log --oneline -10
             echo '```'
           } > release-notes.md
@@ -61,6 +91,8 @@ jobs:
             --title "Daily Build ${{ steps.date.outputs.date }}" \
             --notes-file release-notes.md \
             --prerelease \
-            dist.zip
+            dist-full.zip \
+            /tmp/dist-default.zip \
+            /tmp/dist-minimal.zip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

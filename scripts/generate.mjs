@@ -21,6 +21,7 @@
  *   node scripts/generate.mjs --all                      # 非交互：安装全部模块（含可选）
  *   node scripts/generate.mjs --minimal                  # 非交互：仅必需模块
  *   node scripts/generate.mjs --css=tailwind --http=fetch  # 指定同类框架选择（可与其他标志组合）
+ *   node scripts/generate.mjs --skip-verify --yes --output /tmp/snapshot  # 指定输出目录（CI 友好）
  */
 import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
@@ -35,10 +36,20 @@ const releasesRoot = path.resolve(templateRoot, 'releases')
 const now = new Date()
 const p = (n) => String(n).padStart(2, '0')
 const stamp = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}_${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`
-const target = path.join(releasesRoot, `vue-template-${stamp}`)
 
 // ===== 命令行标志 =====
 const argv = process.argv.slice(2)
+// --output 支持两种形式：--output=<dir> 和 --output <dir>
+const outputEq = argv.find((a) => a.startsWith('--output='))
+const outputIdx = argv.indexOf('--output')
+const outputArg = outputEq
+  ? outputEq.split('=')[1]
+  : outputIdx >= 0 && argv[outputIdx + 1]
+    ? argv[outputIdx + 1]
+    : null
+const target = outputArg
+  ? path.resolve(outputArg)
+  : path.join(releasesRoot, `vue-template-${stamp}`)
 const flags = {
   skipVerify: argv.includes('--skip-verify'),
   all: argv.includes('--all'),
@@ -223,7 +234,7 @@ async function main() {
 
   // 第 3 步：创建历史目录
   console.log('\n===== 第 3 步：创建历史目录 =====')
-  mkdirSync(releasesRoot, { recursive: true })
+  mkdirSync(path.dirname(target), { recursive: true })
   if (existsSync(target)) {
     throw new Error(
       `目标目录已存在，已终止（不自动删除以免误删）：${target}\n如确需覆盖请手动删除后重试。`,
@@ -235,8 +246,8 @@ async function main() {
   console.log('\n===== 第 4 步：官方脚手架创建基础项目 =====')
   run(
     'npm create vite (vue-ts)',
-    `npm create vite@latest "vue-template-${stamp}" -- --template vue-ts --no-install --no-interactive`,
-    releasesRoot,
+    `npm create vite@latest "${path.basename(target)}" -- --template vue-ts --no-install --no-interactive`,
+    path.dirname(target),
   )
 
   // 第 5 步：安装依赖（按选择聚合，分 runtime / dev 两条命令）
