@@ -2,10 +2,5 @@ import { defineConfig, presetIcons, presetWind3 } from 'unocss'
 
 // https://unocss.dev/
 export default defineConfig({
-  presets: [
-    presetWind3(),
-    presetIcons({
-      scale: 1.2,
-    }),
-  ],
+  presets: [presetWind3(), presetIcons()],
 })
