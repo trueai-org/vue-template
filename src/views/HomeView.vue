@@ -19,7 +19,7 @@
       <i class="i-carbon-information text-blue-600" />
       <i class="i-carbon-logo-github text-gray-800" />
     </div>
-    <!-- 图标组件（unplugin-icons + unplugin-vue-components）：依赖 @iconify/json，移除可选集成时删除此块即可 -->
+    <!-- 图标组件（unplugin-icons + unplugin-vue-components）：依赖 @iconify/json，移除集成层时删除此块即可 -->
     <div class="mt-4 flex items-center gap-3 text-xl">
       <i-carbon-home class="text-green-600" />
       <i-carbon-information class="text-blue-600" />

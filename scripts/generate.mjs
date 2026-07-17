@@ -13,7 +13,7 @@ import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { CUSTOM_DIRS, CUSTOM_FILES, SNAPSHOT_OVERRIDE_FILES } from './manifest.mjs'
+import { CUSTOM_DIRS, CUSTOM_FILES, CUSTOM_DEPS, SNAPSHOT_OVERRIDE_FILES } from './manifest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templateRoot = path.resolve(__dirname, '..')
@@ -58,18 +58,23 @@ console.log('\n===== 第 3 步：官方脚手架创建基础项目 =====')
 run('npm create vite (vue-ts)', `npm create vite@latest "vue-template-${stamp}" -- --template vue-ts`, releasesRoot)
 
 // ===== 第 4 步：安装依赖（官方指令，拉取最新版）=====
+// 依赖清单从 manifest.mjs 的 CUSTOM_DEPS 驱动，新增/移除依赖只需改 manifest
 console.log('\n===== 第 4 步：安装依赖 =====')
 run('pnpm install', 'pnpm install', target)
-run('pnpm add pinia@^3 vue-router axios', 'pnpm add pinia@^3 vue-router axios', target)
-run('pnpm add -D unocss @iconify-json/carbon @unocss/reset', 'pnpm add -D unocss @iconify-json/carbon @unocss/reset', target)
-run('pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components', 'pnpm add -D unplugin-icons unplugin-auto-import @iconify/json unplugin-vue-components', target)
+const runtimeCmd = `pnpm add ${CUSTOM_DEPS.runtime.join(' ')}`
+const devCoreCmd = `pnpm add -D ${CUSTOM_DEPS.devCore.join(' ')}`
+const devLayerCmd = `pnpm add -D ${CUSTOM_DEPS.devLayer.join(' ')}`
+
+run(`安装运行时依赖 (${CUSTOM_DEPS.runtime.join(', ')})`, runtimeCmd, target)
+run(`安装核心开发依赖 (${CUSTOM_DEPS.devCore.join(', ')})`, devCoreCmd, target)
+run(`安装集成层依赖 (${CUSTOM_DEPS.devLayer.join(', ')})`, devLayerCmd, target)
 
 // ===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====
 console.log('\n===== 第 5 步：覆盖接入文件 + 新增自定义模块 =====')
 // 覆盖官方接入文件（最小接入：router / pinia / unocss / title，清单见 manifest.mjs）
 for (const f of SNAPSHOT_OVERRIDE_FILES)
   run(`覆盖 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
-// 新增自定义文件（uno 配置 / 环境变量 / 可选集成生成的类型声明）
+// 新增自定义文件（uno 配置 / 环境变量 / 集成层生成的类型声明）
 for (const f of CUSTOM_FILES)
   run(`复制 ${f}`, sh.cpFile(path.join(templateRoot, f), path.join(target, f)))
 // 新增自定义目录

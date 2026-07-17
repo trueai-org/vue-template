@@ -12,7 +12,7 @@ export default defineConfig({
     vue(),
     UnoCSS(),
 
-    // ===== 可选集成（独立可移除，见 README「可选集成」）=====
+    // ===== 集成层（默认包含，独立可移除，见 README「可移除集成层」）=====
 
     // [可选] API 自动导入：vue / vue-router / pinia 的 API 无需手动 import
     // 依赖：unplugin-auto-import；移除：删除本块 + src/auto-imports.d.ts
