@@ -10,6 +10,7 @@
 4. **脚本驱动** - 安装依赖、新增模块、新增页面均通过脚本注入，确保可重现
 5. **不过度封装** - 无 bootstrap、无 http 解包封装、无 UI 组件封装
 6. **所有命令遵循官方文档** - 每个命令附官方文档地址
+7. **模块依赖独立可移除** - 新增的任何模块/依赖都必须独立：配置隔离、使用隔离、可单独迁移/测试/替换/移除。每个自定义依赖须在 README 标注「依赖清单」及其移除步骤，删除时不应牵连其他模块
 
 ## 官方命令与文档
 
@@ -59,6 +60,35 @@ pnpm build            # 更新后验证构建
 - **Preset**：使用 `presetWind3`（`presetUno` 已弃用，见 [Presets](https://unocss.dev/guide/presets)）
 - **Style Reset**：使用 `@unocss/reset/tailwind-v4.css` 作为默认样式（见 [Reset](https://unocss.dev/guide/style-reset)），官方 `style.css` 已清空。`border` 等原子类可直接生效
 - **Vite 集成**：`plugins: [vue(), UnoCSS()]` + `import '@unocss/reset/tailwind-v4.css'` + `import 'virtual:uno.css'`（见 [Vite](https://unocss.dev/integrations/vite)）
+- **图标（独立模块）**：`presetIcons` + `@iconify-json/carbon` 提供 Carbon 图标集，使用原子类 `i-carbon-<name>`（如 `i-carbon-home`）。演示见 `src/views/HomeView.vue` 的图标块。图标查询：[icones.js.org](https://icones.js.org/) · [UnoCSS Icons preset](https://unocss.dev/presets/icons)
+
+
+
+## 自定义依赖清单与移除步骤
+
+> 遵循「规则 7：模块依赖独立可移除」。每个自定义依赖标注其配置位置、使用位置、移除步骤，确保单独移除不牵连其他模块。
+
+| 依赖 | 类型 | 配置位置 | 使用位置 | 官方文档 |
+| --- | --- | --- | --- | --- |
+| `pinia` | 运行时 | `src/stores/index.ts`（实例） | `src/main.ts` 注册 | [Pinia](https://pinia.vuejs.org) |
+| `vue-router` | 运行时 | `src/router/index.ts` | `src/main.ts` 注册 · `src/App.vue` 出口 | [Vue Router](https://router.vuejs.org) |
+| `axios` | 运行时 | `src/api/request.ts` | 按需 import | [Axios](https://axios-http.com) |
+| `unocss` | 开发 | `uno.config.ts` · `vite.config.ts` 插件 | `src/main.ts` 引入 reset + virtual | [UnoCSS](https://unocss.dev) |
+| `@unocss/reset` | 开发 | `src/main.ts` 引入 `tailwind-v4.css` | `src/style.css` 已清空 | [Reset](https://unocss.dev/guide/style-reset) |
+| `@iconify-json/carbon` | 开发 | `uno.config.ts` 的 `presetIcons` | `src/views/HomeView.vue` 图标块 | [Icons preset](https://unocss.dev/presets/icons) |
+
+### 移除图标库（示例：独立移除一个模块）
+
+```bash
+pnpm remove @iconify-json/carbon
+```
+
+1. 卸载包：`pnpm remove @iconify-json/carbon`
+2. 移除配置：删除 `uno.config.ts` 中的 `presetIcons(...)`（保留 `presetWind3`）
+3. 移除使用：删除 `src/views/HomeView.vue` 中带「图标演示」注释的 `<div>` 块
+4. 验证：`pnpm build`
+
+移除后 UnoCSS 原子类与其他模块不受影响。换用其他图标集（如 `@iconify-json/mdi`）只需替换包名与 `i-mdi-<name>` 类名前缀。
 
 
 
@@ -420,8 +450,13 @@ export default request
       <span class="px-2 py-1 bg-green-500 text-white rounded">UnoCSS</span>
       <span class="px-2 py-1 bg-blue-500 text-white rounded">Vue3</span>
     </div>
+    <!-- 图标演示：依赖 @iconify-json/carbon + uno.config.ts 的 presetIcons，移除图标库时删除此块即可 -->
+    <div class="mt-4 flex items-center gap-3 text-xl">
+      <i class="i-carbon-home text-green-600" />
+      <i class="i-carbon-information text-blue-600" />
+      <i class="i-carbon-logo-github text-gray-800" />
+    </div>
   </section>
-</template>
 ```
 
 `src/views/AboutView.vue`：
@@ -438,8 +473,8 @@ export default request
 </template>
 ```
 
-- **用途**：两个路由页面，演示 UnoCSS 原子类（`m-4`、`text-red-400`、`flex` 等）生效。
-- **官网**：[UnoCSS 交互式查询](https://unocss.dev/interactive/)
+- **用途**：两个路由页面，演示 UnoCSS 原子类（`m-4`、`text-red-400`、`flex` 等）生效；`HomeView` 内含独立图标演示块（`i-carbon-home` 等），依赖第 4 步的 `@iconify-json/carbon` 与第 6 步的 `presetIcons`。
+- **官网**：[UnoCSS 交互式查询](https://unocss.dev/interactive/) · [Icons preset](https://unocss.dev/presets/icons) · [图标查询 icones](https://icones.js.org/)
 
 #### 第 14 步：新建环境变量文件
 

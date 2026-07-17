@@ -13,5 +13,11 @@
       <span class="px-2 py-1 bg-green-500 text-white rounded">UnoCSS</span>
       <span class="px-2 py-1 bg-blue-500 text-white rounded">Vue3</span>
     </div>
+    <!-- 图标演示：依赖 @iconify-json/carbon + uno.config.ts 的 presetIcons，移除图标库时删除此块即可 -->
+    <div class="mt-4 flex items-center gap-3 text-xl">
+      <i class="i-carbon-home text-green-600" />
+      <i class="i-carbon-information text-blue-600" />
+      <i class="i-carbon-logo-github text-gray-800" />
+    </div>
   </section>
 </template>
