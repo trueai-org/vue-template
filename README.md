@@ -700,5 +700,30 @@ vue-template/
 - **CI**：`.github/workflows/daily-build.yml` 每天 UTC 02:00 自动构建 + 发布 GitHub Release（`daily-YYYY-MM-DD` tag + `dist.zip` 产物附件）
 - **本地**：`node scripts/build.mjs`
 
-## TODO
-- 如何更新当前模板同时保持与官方模板一致呢？官方模板是通过 `npm create vite@latest` 生成的，直接下载代码？还是？[vue-ts](https://vite.dev/guide/#scaffolding-your-first-vite-project)
+## 同步官方模板
+
+官方 `create-vite` 模板持续演进，`scripts/sync.mjs` 用于将上游变更同步回当前项目。
+
+```bash
+pnpm sync              # 预览模式（只显示差异，不修改文件）
+pnpm sync -- --apply   # 实际同步（覆盖官方未修改文件 + 验证构建）
+```
+
+**文件分类与处理策略**（与 `generate.mjs` 一致）：
+
+| 分类 | 文件 | 同步策略 |
+|------|------|----------|
+| 官方未修改 | `tsconfig*.json`、`.gitignore`、`public/`、`src/components/`、`src/assets/` | 有差异时自动覆盖 |
+| 官方脚本修改 | `src/main.ts`、`src/App.vue`、`src/style.css`、`vite.config.ts`、`index.html` | 有差异时提示，需人工审查 |
+| 自定义 | `src/router/`、`src/stores/`、`src/api/`、`src/views/`、`uno.config.ts`、`scripts/`、`.github/`、`.env*` | 不动 |
+
+**同步流程**：
+
+1. 在临时目录 `npm create vite@latest` 生成最新官方模板
+2. 对比官方文件（未修改类）：有差异则列出，`--apply` 时自动覆盖
+3. 对比官方文件（脚本修改类）：有差异则提示，打印新旧路径供手动对比
+4. 对比 `package.json` 官方依赖版本与 scripts：列出差异
+5. `--apply` 时自动运行 `pnpm build` 验证
+6. 清理临时目录
+
+> 脚本修改类文件不会被自动覆盖。如果官方 `main.ts` 等文件结构发生变化，需手动审查并更新自定义版本。

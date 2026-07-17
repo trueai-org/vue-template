@@ -10,6 +10,7 @@
     "typecheck": "vue-tsc -b --noEmit",
     "preview": "vite preview",
     "generate": "node scripts/generate.mjs",
+    "sync": "node scripts/sync.mjs",
     "update-latest": "pnpm update --latest"
   },
   "dependencies": {
