@@ -188,7 +188,7 @@ export const MODULES = {
 
   build: {
     label: '构建增强（产物分析 + Vue DevTools）',
-    tier: 'default',
+    tier: 'optional',
     deps: {
       dev: [
         'rollup-plugin-visualizer', // 构建产物体积可视化分析（pnpm analyze 生成 stats.html）
