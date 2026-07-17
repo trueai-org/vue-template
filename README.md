@@ -155,6 +155,43 @@ pnpm remove @iconify-json/carbon
 
 移除后 UnoCSS 原子类与其他模块不受影响。换用其他图标集（如 `@iconify-json/mdi`）只需替换包名与 `i-mdi-<name>` 类名前缀。
 
+## 暂不集成的模块
+
+> 以下模块本模板**不默认集成**，仅提供说明和指导。如需使用，请按下方指令自行添加。
+
+### Husky（Git Hooks）
+
+**为什么不集成**：Husky 的 pre-commit / commit-msg 钩子在 Windows + PowerShell 环境下频繁报错（`pnpm exec` 路径问题、`core.hooksPath` 配置漂移、lint-staged 自动格式化干扰提交流程）。为了保持模板的"开箱即用、零配置障碍"原则，移除了 Husky 相关的全部依赖和配置。
+
+**官方文档**：[https://typicode.github.io/husky/](https://typicode.github.io/husky/)
+
+**如需自行添加**：
+
+```bash
+# 1. 安装 husky
+pnpm add -D husky
+
+# 2. 初始化（创建 .husky/ 目录并设置 git hooksPath）
+pnpm exec husky init
+
+# 3. 添加 pre-commit 钩子（示例：手动调用 lint）
+echo "pnpm lint" > .husky/pre-commit
+
+# 4. 添加 commit-msg 钩子（需要 commitlint，可选）
+pnpm add -D @commitlint/cli @commitlint/config-conventional
+echo 'export default { extends: ["@commitlint/config-conventional"] }' > commitlint.config.js
+echo 'pnpm exec commitlint --edit "$1"' > .husky/commit-msg
+```
+
+> **提示**：如果同时需要 lint-staged（只检查暂存区文件），安装后配置 `.lintstagedrc.json`：
+> ```bash
+> pnpm add -D lint-staged
+> ```
+> ```json
+> { "*.{ts,vue,js}": ["eslint --fix", "prettier --write"] }
+> ```
+> 注意：`eslint --fix` 和 `prettier --write` 会**自动修改**暂存区文件，如不需要自动修复改为 `eslint` 和 `prettier --check`。
+
 ## 集成层模块详解（layer）
 
 > 以下 4 个 `unplugin` 插件构成 `layer` 模块（默认安装，可整体移除），均已在 `vite.config.ts` 中以 `@module:layer` 标记块配置。
