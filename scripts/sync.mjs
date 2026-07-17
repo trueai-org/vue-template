@@ -88,7 +88,7 @@ mkdirSync(tmpParent, { recursive: true })
 
 console.log('\n▶ 第 1 步：生成最新官方模板')
 try {
-  execSync('npm create vite@latest vue-ts-fresh -- --template vue-ts', { stdio: 'inherit', cwd: tmpParent })
+  execSync('npm create vite@latest vue-ts-fresh -- --template vue-ts --no-install --no-interactive', { stdio: 'inherit', cwd: tmpParent })
 } catch {
   console.error('✗ npm create vite 失败，请检查网络连接')
   rmSync(tmpParent, { recursive: true, force: true })

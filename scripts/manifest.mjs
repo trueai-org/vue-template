@@ -44,9 +44,10 @@ export const CUSTOM_FILES = [
   'src/components.d.ts', // 同上
 ]
 
-// 自定义但不进快照：README.md 是模板使用文档，快照保留 create-vite 生成的版本
+// 自定义但不进快照：文档类文件，快照保留 create-vite 生成的版本
 export const CUSTOM_DOCS = [
   'README.md',
+  'AGENTS.md',
 ]
 
 // 自定义依赖清单（generate.mjs 安装命令的单一事实来源）

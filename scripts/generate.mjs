@@ -31,9 +31,9 @@ const sh = {
   cpFile: (s, d) => isWin ? `copy /y "${s}" "${d}" >nul` : `cp "${s}" "${d}"`,
 }
 
-function run(label, command, cwd) {
+function run(label, command, cwd, options = {}) {
   console.log(`\n▶ ${label}\n  ${command}`)
-  execSync(command, { stdio: 'inherit', cwd })
+  execSync(command, { stdio: 'inherit', cwd, ...options })
 }
 
 // ===== 第 1 步：验证当前项目 =====
@@ -55,7 +55,7 @@ console.log(`  目标: ${target}`)
 
 // ===== 第 3 步：官方脚手架创建基础项目 =====
 console.log('\n===== 第 3 步：官方脚手架创建基础项目 =====')
-run('npm create vite (vue-ts)', `npm create vite@latest "vue-template-${stamp}" -- --template vue-ts`, releasesRoot)
+run('npm create vite (vue-ts)', `npm create vite@latest "vue-template-${stamp}" -- --template vue-ts --no-install --no-interactive`, releasesRoot)
 
 // ===== 第 4 步：安装依赖（官方指令，拉取最新版）=====
 // 依赖清单从 manifest.mjs 的 CUSTOM_DEPS 驱动，新增/移除依赖只需改 manifest
