@@ -14,9 +14,7 @@ const run = (msg, cmd) => {
 }
 
 // 首次无 lock 文件时生成，之后用 frozen-lockfile 保证可重现
-const installCmd = existsSync('pnpm-lock.yaml')
-  ? 'pnpm install --frozen-lockfile'
-  : 'pnpm install'
+const installCmd = existsSync('pnpm-lock.yaml') ? 'pnpm install --frozen-lockfile' : 'pnpm install'
 
 run('安装依赖', installCmd)
 run('生产构建（含类型检查）', 'pnpm build')

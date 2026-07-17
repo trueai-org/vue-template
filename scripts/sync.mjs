@@ -18,7 +18,13 @@ import { mkdirSync, readFileSync, readdirSync, statSync, rmSync, copyFileSync } 
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { CUSTOM_DIRS, CUSTOM_DOCS, CUSTOM_FILES, OFFICIAL_DEP_KEYS, OFFICIAL_MODIFIED } from './manifest.mjs'
+import {
+  CUSTOM_DIRS,
+  CUSTOM_DOCS,
+  CUSTOM_FILES,
+  OFFICIAL_DEP_KEYS,
+  OFFICIAL_MODIFIED,
+} from './manifest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templateRoot = path.resolve(__dirname, '..')
@@ -79,7 +85,11 @@ function walkFiles(dir, base = dir) {
 
 // ===== 主流程 =====
 
-console.log(apply ? '\n===== 同步模式（--apply）=====' : '\n===== 预览模式（dry-run，使用 --apply 实际执行）=====')
+console.log(
+  apply
+    ? '\n===== 同步模式（--apply）====='
+    : '\n===== 预览模式（dry-run，使用 --apply 实际执行）=====',
+)
 
 // 第 1 步：生成最新官方模板
 const tmpParent = path.join(tmpdir(), `vite-sync-${Date.now()}`)
@@ -88,7 +98,10 @@ mkdirSync(tmpParent, { recursive: true })
 
 console.log('\n▶ 第 1 步：生成最新官方模板')
 try {
-  execSync('npm create vite@latest vue-ts-fresh -- --template vue-ts --no-install --no-interactive', { stdio: 'inherit', cwd: tmpParent })
+  execSync(
+    'npm create vite@latest vue-ts-fresh -- --template vue-ts --no-install --no-interactive',
+    { stdio: 'inherit', cwd: tmpParent },
+  )
 } catch {
   console.error('✗ npm create vite 失败，请检查网络连接')
   rmSync(tmpParent, { recursive: true, force: true })
@@ -99,11 +112,11 @@ try {
   // 第 2 步：对比官方文件
   console.log('\n▶ 第 2 步：对比官方文件')
   const freshFiles = walkFiles(tmpProject)
-  const freshFileSet = new Set(freshFiles.map(f => f.split(path.sep).join('/')))
+  const freshFileSet = new Set(freshFiles.map((f) => f.split(path.sep).join('/')))
 
-  const autoApply = []    // 官方未修改文件，可安全覆盖
+  const autoApply = [] // 官方未修改文件，可安全覆盖
   const manualReview = [] // 官方脚本修改文件，需人工审查
-  const newFiles = []     // 官方新增文件
+  const newFiles = [] // 官方新增文件
 
   for (const relPath of freshFiles) {
     const norm = relPath.split(path.sep).join('/')
