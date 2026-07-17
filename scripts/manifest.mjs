@@ -162,7 +162,7 @@ export const MODULES = {
 
   quality: {
     label: '代码质量（ESLint + Prettier）',
-    tier: 'default',
+    tier: 'optional',
     deps: {
       dev: [
         'eslint', // 代码规范检查（flat config，ESLint 9+）
