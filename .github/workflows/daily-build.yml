@@ -77,7 +77,7 @@ jobs:
             echo "> 选择组互斥，不可同时安装多个同类框架。"
             echo ""
             echo "### 最近提交"
-            echo '```'"
+            echo '```'
             git log --oneline -10
             echo '```'
           } > release-notes.md
